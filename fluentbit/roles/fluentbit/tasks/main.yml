@@ -1,0 +1,47 @@
+---
+- name: Install Fluent Bit
+  apt:
+    name: td-agent-bit
+    state: present
+    update_cache: yes
+
+- name: Create configuration directories
+  file:
+    path: "/etc/fluent-bit/{{ item }}"
+    state: directory
+  loop:
+    - inputs
+    - filters
+    - outputs
+
+- name: Deploy main Fluent Bit config
+  template:
+    src: fluent-bit.conf.j2
+    dest: /etc/fluent-bit/fluent-bit.conf
+
+- name: Deploy input configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/fluent-bit/inputs/{{ item }}"
+  loop:
+    - loki-input.conf
+
+- name: Deploy filter configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/fluent-bit/filters/{{ item }}"
+  loop:
+    - loki-filter.conf
+
+- name: Deploy output configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/fluent-bit/outputs/{{ item }}"
+  loop:
+    - loki-output.conf
+
+- name: Restart Fluent Bit
+  systemd:
+    name: td-agent-bit
+    state: restarted
+    enabled: yes

@@ -1,0 +1,15 @@
+[OUTPUT]
+    Name        loki
+    Match       sonobuoy-json
+    Host        havij-master-1
+    Port        31000
+    Labels      job=sonobuoy
+    Line_Format json
+
+[OUTPUT]
+    Name  loki
+    Match *
+    Host  havij-master-1:32000
+    Port  31000
+    Labels  job=fluentbit
+~                            
