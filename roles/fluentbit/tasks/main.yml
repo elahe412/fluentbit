@@ -1,37 +1,36 @@
 - name: Get OS codename
-  ansible.builtin.command: lsb_release -c
+  command: lsb_release -c
   register: os_codename_raw
   changed_when: false
 
-- name: Extract OS codename from command output
-  set_fact:
-    codename: "{{ os_codename_raw.stdout.split(':')[1] | trim }}"
 
-- name: Add the Fluent Bit repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/fluentbit-keyring.gpg] https://packages.fluentbit.io/ubuntu/{{ codename }}/ {{ codename }} main"
-    filename: "fluentbit"
+- name: Add an Apt signing key, uses whichever key is at the URL
+  ansible.builtin.apt_key:
+    url: https://packages.fluentbit.io/fluentbit.key
     state: present
+    keyring: /usr/share/keyrings/fluentbit-keyring.gpg
+
+- name: Generate repo list
+  ansible.builtin.template:
+    src: fluentbit.list.j2
+    dest: "/etc/apt/sources.list.d/fluentbit.list"
+    backup: true
+
 
 - name: Update APT package cache
-  ansible.builtin.apt:
+  apt:
     update_cache: yes
 
 - name: Install Fluent Bit
-  ansible.builtin.apt:
+  apt:
     name: fluent-bit
     state: present
 
 - name: Ensure Fluent Bit is started and enabled
-  ansible.builtin.systemd:
+  systemd:
     name: fluent-bit
     state: started
     enabled: yes
-
-- name: Check Fluent Bit status
-  ansible.builtin.systemd:
-    name: fluent-bit
-    register: fluentbit_status
 
 - name: Create configuration directories
   file:
@@ -70,6 +69,7 @@
 
 - name: Restart Fluent Bit
   systemd:
-    name: td-agent-bit
+    name: fluent-bit
     state: restarted
     enabled: yes
+

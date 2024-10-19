@@ -1,0 +1,2 @@
+loki_host: "http://localhost"
+loki_port: "3100"

@@ -1,0 +1,14 @@
+[OUTPUT]
+    Name        loki
+    Match       sonobuoy-json
+    Host  {{ loki_host }}
+    Port  {{ loki_port }}
+    Labels      job=sonobuoy
+    Line_Format json
+
+[OUTPUT]
+    Name  loki
+    Match *
+    Host  {{ loki_host }}
+    Port  {{ loki_port }}
+    Labels  job=fluentbit
